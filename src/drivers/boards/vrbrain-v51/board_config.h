@@ -34,7 +34,7 @@
 /**
  * @file board_config.h
  *
- * VRBRAINv52 internal definitions
+ * VRBRAINv51 internal definitions
  */
 
 #pragma once
