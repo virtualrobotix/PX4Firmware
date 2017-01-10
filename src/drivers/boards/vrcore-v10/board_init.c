@@ -218,7 +218,6 @@ __EXPORT int nsh_archinitialize(void)
 	/* configure ADC pins */
 	stm32_configgpio(GPIO_ADC1_IN10);	/* BATT_VOLTAGE_SENS */
 	stm32_configgpio(GPIO_ADC1_IN11);	/* BATT_CURRENT_SENS */
-	stm32_configgpio(GPIO_ADC1_IN14);	/* SONAR */
 
 	/* configure power supply control/sense pins */
 
