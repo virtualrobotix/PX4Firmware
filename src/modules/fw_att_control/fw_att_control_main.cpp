@@ -1126,7 +1126,6 @@ FixedwingAttitudeControl::task_main()
 
 						/* add in manual rudder control */
 						_actuators.control[actuator_controls_s::INDEX_YAW] += yaw_manual;
-
 						if (!PX4_ISFINITE(yaw_u)) {
 							_yaw_ctrl.reset_integrator();
 							_wheel_ctrl.reset_integrator();
