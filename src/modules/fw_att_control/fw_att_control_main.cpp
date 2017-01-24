@@ -866,7 +866,7 @@ FixedwingAttitudeControl::task_main()
 			/* lock integrator until control is started */
 			bool lock_integrator;
 
-			if (_vcontrol_mode.flag_control_attitude_enabled && !_vehicle_status.is_rotary_wing) {
+			if (_vcontrol_mode.flag_control_rates_enabled && !_vehicle_status.is_rotary_wing) {
 				lock_integrator = false;
 
 			} else {
@@ -931,7 +931,7 @@ FixedwingAttitudeControl::task_main()
 			}
 
 			/* decide if in stabilized or full manual control */
-			if (_vcontrol_mode.flag_control_attitude_enabled) {
+			if (_vcontrol_mode.flag_control_rates_enabled) {
 				/* scale around tuning airspeed */
 				float airspeed;
 
@@ -1027,9 +1027,9 @@ FixedwingAttitudeControl::task_main()
 				control_input.roll = _roll;
 				control_input.pitch = _pitch;
 				control_input.yaw = _yaw;
-				control_input.roll_rate = _ctrl_state.roll_rate;
-				control_input.pitch_rate = _ctrl_state.pitch_rate;
-				control_input.yaw_rate = _ctrl_state.yaw_rate;
+				control_input.body_x_rate = _ctrl_state.roll_rate;
+				control_input.body_y_rate = _ctrl_state.pitch_rate;
+				control_input.body_z_rate = _ctrl_state.yaw_rate;
 				control_input.speed_body_u = speed_body_u;
 				control_input.speed_body_v = speed_body_v;
 				control_input.speed_body_w = speed_body_w;
@@ -1050,105 +1050,122 @@ FixedwingAttitudeControl::task_main()
 				_yaw_ctrl.set_coordinated_method(_parameters.y_coordinated_method);
 
 				/* Run attitude controllers */
-				if (PX4_ISFINITE(roll_sp) && PX4_ISFINITE(pitch_sp)) {
-					_roll_ctrl.control_attitude(control_input);
-					_pitch_ctrl.control_attitude(control_input);
-					_yaw_ctrl.control_attitude(control_input); //runs last, because is depending on output of roll and pitch attitude
-					_wheel_ctrl.control_attitude(control_input);
+				if (_vcontrol_mode.flag_control_attitude_enabled) {
+					if (PX4_ISFINITE(roll_sp) && PX4_ISFINITE(pitch_sp)) {
+						_roll_ctrl.control_attitude(control_input);
+						_pitch_ctrl.control_attitude(control_input);
+						_yaw_ctrl.control_attitude(control_input); //runs last, because is depending on output of roll and pitch attitude
+						_wheel_ctrl.control_attitude(control_input);
 
-					/* Update input data for rate controllers */
-					control_input.roll_rate_setpoint = _roll_ctrl.get_desired_rate();
-					control_input.pitch_rate_setpoint = _pitch_ctrl.get_desired_rate();
-					control_input.yaw_rate_setpoint = _yaw_ctrl.get_desired_rate();
+						/* Update input data for rate controllers */
+						control_input.roll_rate_setpoint = _roll_ctrl.get_desired_rate();
+						control_input.pitch_rate_setpoint = _pitch_ctrl.get_desired_rate();
+						control_input.yaw_rate_setpoint = _yaw_ctrl.get_desired_rate();
 
-					/* Run attitude RATE controllers which need the desired attitudes from above, add trim */
-					float roll_u = _roll_ctrl.control_bodyrate(control_input);
-					_actuators.control[actuator_controls_s::INDEX_ROLL] = (PX4_ISFINITE(roll_u)) ? roll_u + _parameters.trim_roll :
-							_parameters.trim_roll;
+						control_input.do_turn_compensation = true;
 
-					if (!PX4_ISFINITE(roll_u)) {
-						_roll_ctrl.reset_integrator();
-						perf_count(_nonfinite_output_perf);
+						/* Run attitude RATE controllers which need the desired attitudes from above, add trim */
+						float roll_u = _roll_ctrl.control_euler_rate(control_input);
+						_actuators.control[0] = (PX4_ISFINITE(roll_u)) ? roll_u + _parameters.trim_roll : _parameters.trim_roll;
 
-						if (_debug && loop_counter % 10 == 0) {
-							warnx("roll_u %.4f", (double)roll_u);
+						if (!PX4_ISFINITE(roll_u)) {
+							_roll_ctrl.reset_integrator();
+							perf_count(_nonfinite_output_perf);
+
+							if (_debug && loop_counter % 10 == 0) {
+								warnx("roll_u %.4f", (double)roll_u);
+							}
 						}
-					}
 
-					float pitch_u = _pitch_ctrl.control_bodyrate(control_input);
-					_actuators.control[actuator_controls_s::INDEX_PITCH] = (PX4_ISFINITE(pitch_u)) ? pitch_u + _parameters.trim_pitch :
-							_parameters.trim_pitch;
+						float pitch_u = _pitch_ctrl.control_euler_rate(control_input);
+						_actuators.control[1] = (PX4_ISFINITE(pitch_u)) ? pitch_u + _parameters.trim_pitch : _parameters.trim_pitch;
 
-					if (!PX4_ISFINITE(pitch_u)) {
-						_pitch_ctrl.reset_integrator();
-						perf_count(_nonfinite_output_perf);
+						if (!PX4_ISFINITE(pitch_u)) {
+							_pitch_ctrl.reset_integrator();
+							perf_count(_nonfinite_output_perf);
 
-						if (_debug && loop_counter % 10 == 0) {
-							warnx("pitch_u %.4f, _yaw_ctrl.get_desired_rate() %.4f,"
-							      " airspeed %.4f, airspeed_scaling %.4f,"
-							      " roll_sp %.4f, pitch_sp %.4f,"
-							      " _roll_ctrl.get_desired_rate() %.4f,"
-							      " _pitch_ctrl.get_desired_rate() %.4f"
-							      " att_sp.roll_body %.4f",
-							      (double)pitch_u, (double)_yaw_ctrl.get_desired_rate(),
-							      (double)airspeed, (double)airspeed_scaling,
-							      (double)roll_sp, (double)pitch_sp,
-							      (double)_roll_ctrl.get_desired_rate(),
-							      (double)_pitch_ctrl.get_desired_rate(),
-							      (double)_att_sp.roll_body);
+							if (_debug && loop_counter % 10 == 0) {
+								warnx("pitch_u %.4f, _yaw_ctrl.get_desired_rate() %.4f,"
+								      " airspeed %.4f, airspeed_scaling %.4f,"
+								      " roll_sp %.4f, pitch_sp %.4f,"
+								      " _roll_ctrl.get_desired_rate() %.4f,"
+								      " _pitch_ctrl.get_desired_rate() %.4f"
+								      " att_sp.roll_body %.4f",
+								      (double)pitch_u, (double)_yaw_ctrl.get_desired_rate(),
+								      (double)airspeed, (double)airspeed_scaling,
+								      (double)roll_sp, (double)pitch_sp,
+								      (double)_roll_ctrl.get_desired_rate(),
+								      (double)_pitch_ctrl.get_desired_rate(),
+								      (double)_att_sp.roll_body);
+							}
 						}
-					}
 
-					float yaw_u = 0.0f;
+						float yaw_u = 0.0f;
 
-					if (_att_sp.fw_control_yaw == true) {
-						yaw_u = _wheel_ctrl.control_bodyrate(control_input);
+						if (_att_sp.fw_control_yaw == true) {
+							yaw_u = _wheel_ctrl.control_bodyrate(control_input);
+						}
+
+						else {
+							yaw_u = _yaw_ctrl.control_euler_rate(control_input);
+						}
+
+						_actuators.control[2] = (PX4_ISFINITE(yaw_u)) ? yaw_u + _parameters.trim_yaw : _parameters.trim_yaw;
+
+						/* add in manual rudder control */
+						_actuators.control[2] += yaw_manual;
+
+						if (!PX4_ISFINITE(yaw_u)) {
+							_yaw_ctrl.reset_integrator();
+							_wheel_ctrl.reset_integrator();
+							perf_count(_nonfinite_output_perf);
+
+							if (_debug && loop_counter % 10 == 0) {
+								warnx("yaw_u %.4f", (double)yaw_u);
+							}
+						}
+
+						// XXX throttle passed through if it is finite. Do not zero throttle in case of engine failure. We are using the engine failure
+						// flag to indicate that a possible engine failure happened but we don't take this for granted.
+						_actuators.control[3] = (PX4_ISFINITE(throttle_sp) &&
+									 //!(_vehicle_status.engine_failure ||
+									 !_vehicle_status.engine_failure_cmd) ?
+									throttle_sp : 0.0f;
+
+						if (!PX4_ISFINITE(throttle_sp)) {
+							if (_debug && loop_counter % 10 == 0) {
+								warnx("throttle_sp %.4f", (double)throttle_sp);
+							}
+						}
 
 					} else {
-						yaw_u = _yaw_ctrl.control_bodyrate(control_input);
-					}
-
-					_actuators.control[actuator_controls_s::INDEX_YAW] = (PX4_ISFINITE(yaw_u)) ? yaw_u + _parameters.trim_yaw :
-							_parameters.trim_yaw;
-
-					/* add in manual rudder control */
-					_actuators.control[actuator_controls_s::INDEX_YAW] += yaw_manual;
-
-					if (!PX4_ISFINITE(yaw_u)) {
-						_yaw_ctrl.reset_integrator();
-						_wheel_ctrl.reset_integrator();
-						perf_count(_nonfinite_output_perf);
+						perf_count(_nonfinite_input_perf);
 
 						if (_debug && loop_counter % 10 == 0) {
-							warnx("yaw_u %.4f", (double)yaw_u);
-						}
-					}
-
-					/* throttle passed through if it is finite and if no engine failure was detected */
-					_actuators.control[actuator_controls_s::INDEX_THROTTLE] = (PX4_ISFINITE(throttle_sp) &&
-							!(_vehicle_status.engine_failure ||
-							  _vehicle_status.engine_failure_cmd)) ?
-							throttle_sp : 0.0f;
-
-					/* scale effort by battery status */
-					if (_parameters.bat_scale_en && _battery_status.scale > 0.0f &&
-					    _actuators.control[actuator_controls_s::INDEX_THROTTLE] > 0.1f) {
-						_actuators.control[actuator_controls_s::INDEX_THROTTLE] *= _battery_status.scale;
-					}
-
-
-					if (!PX4_ISFINITE(throttle_sp)) {
-						if (_debug && loop_counter % 10 == 0) {
-							warnx("throttle_sp %.4f", (double)throttle_sp);
+							warnx("Non-finite setpoint roll_sp: %.4f, pitch_sp %.4f", (double)roll_sp, (double)pitch_sp);
 						}
 					}
 
 				} else {
-					perf_count(_nonfinite_input_perf);
+					// pure rate control
+					_roll_ctrl.set_bodyrate_setpoint(_manual.y * 6.0f);
+					_pitch_ctrl.set_bodyrate_setpoint(-_manual.x * 6.0f);
+					_yaw_ctrl.set_bodyrate_setpoint(_manual.r);
 
-					if (_debug && loop_counter % 10 == 0) {
-						warnx("Non-finite setpoint roll_sp: %.4f, pitch_sp %.4f", (double)roll_sp, (double)pitch_sp);
-					}
+					float roll_u = _roll_ctrl.control_bodyrate(control_input);
+					_actuators.control[0] = (PX4_ISFINITE(roll_u)) ? roll_u + _parameters.trim_roll : _parameters.trim_roll;
+
+					float pitch_u = _pitch_ctrl.control_bodyrate(control_input);
+					_actuators.control[1] = (PX4_ISFINITE(pitch_u)) ? pitch_u + _parameters.trim_pitch : _parameters.trim_pitch;
+
+					float yaw_u = _yaw_ctrl.control_bodyrate(control_input);
+					_actuators.control[2] = (PX4_ISFINITE(yaw_u)) ? yaw_u + _parameters.trim_yaw : _parameters.trim_yaw;
+
+					_actuators.control[3] = (PX4_ISFINITE(throttle_sp) &&
+								 //!(_vehicle_status.engine_failure ||
+								 !_vehicle_status.engine_failure_cmd) ?
+								throttle_sp : 0.0f;
+
 				}
 
 				/*
