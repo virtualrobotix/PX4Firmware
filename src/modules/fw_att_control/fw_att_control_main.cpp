@@ -1065,7 +1065,6 @@ FixedwingAttitudeControl::task_main()
 				control_input.lock_integrator = lock_integrator;
 				control_input.groundspeed = groundspeed;
 				control_input.groundspeed_scaler = groundspeed_scaler;
-				control_input.do_turn_compensation = false;
 
 				_yaw_ctrl.set_coordinated_method(_parameters.y_coordinated_method);
 
@@ -1081,8 +1080,6 @@ FixedwingAttitudeControl::task_main()
 						control_input.roll_rate_setpoint = _roll_ctrl.get_desired_rate();
 						control_input.pitch_rate_setpoint = _pitch_ctrl.get_desired_rate();
 						control_input.yaw_rate_setpoint = _yaw_ctrl.get_desired_rate();
-
-						control_input.do_turn_compensation = true;
 
 						/* Run attitude RATE controllers which need the desired attitudes from above, add trim */
 						float roll_u = _roll_ctrl.control_euler_rate(control_input);
