@@ -199,6 +199,10 @@ private:
 		float man_pitch_scale;			/**< scale factor applied to pitch actuator control in pure manual mode */
 		float man_yaw_scale; 			/**< scale factor applied to yaw actuator control in pure manual mode */
 
+		float acro_max_x_rate_rad;
+		float acro_max_y_rate_rad;
+		float acro_max_z_rate_rad;
+
 		float flaps_scale;				/**< Scale factor for flaps */
 		float flaperon_scale;			/**< Scale factor for flaperons */
 
@@ -250,6 +254,10 @@ private:
 		param_t man_roll_scale;
 		param_t man_pitch_scale;
 		param_t man_yaw_scale;
+
+		param_t acro_max_x_rate;
+		param_t acro_max_y_rate;
+		param_t acro_max_z_rate;
 
 		param_t flaps_scale;
 		param_t flaperon_scale;
@@ -446,6 +454,10 @@ FixedwingAttitudeControl::FixedwingAttitudeControl() :
 	_parameter_handles.man_pitch_scale = param_find("FW_MAN_P_SC");
 	_parameter_handles.man_yaw_scale = param_find("FW_MAN_Y_SC");
 
+	_parameter_handles.acro_max_x_rate = param_find("FW_ACRO_X_MAX");
+	_parameter_handles.acro_max_y_rate = param_find("FW_ACRO_Y_MAX");
+	_parameter_handles.acro_max_z_rate = param_find("FW_ACRO_Z_MAX");
+
 	_parameter_handles.flaps_scale = param_find("FW_FLAPS_SCL");
 	_parameter_handles.flaperon_scale = param_find("FW_FLAPERON_SCL");
 
@@ -538,6 +550,13 @@ FixedwingAttitudeControl::parameters_update()
 	param_get(_parameter_handles.man_roll_scale, &(_parameters.man_roll_scale));
 	param_get(_parameter_handles.man_pitch_scale, &(_parameters.man_pitch_scale));
 	param_get(_parameter_handles.man_yaw_scale, &(_parameters.man_yaw_scale));
+
+	param_get(_parameter_handles.acro_max_x_rate, &(_parameters.acro_max_x_rate_rad));
+	param_get(_parameter_handles.acro_max_y_rate, &(_parameters.acro_max_y_rate_rad));
+	param_get(_parameter_handles.acro_max_z_rate, &(_parameters.acro_max_z_rate_rad));
+	_parameters.acro_max_x_rate_rad = math::radians(_parameters.acro_max_x_rate_rad);
+	_parameters.acro_max_y_rate_rad = math::radians(_parameters.acro_max_y_rate_rad);
+	_parameters.acro_max_z_rate_rad = math::radians(_parameters.acro_max_z_rate_rad);
 
 	param_get(_parameter_handles.flaps_scale, &_parameters.flaps_scale);
 	param_get(_parameter_handles.flaperon_scale, &_parameters.flaperon_scale);
@@ -1046,6 +1065,7 @@ FixedwingAttitudeControl::task_main()
 				control_input.lock_integrator = lock_integrator;
 				control_input.groundspeed = groundspeed;
 				control_input.groundspeed_scaler = groundspeed_scaler;
+				control_input.do_turn_compensation = false;
 
 				_yaw_ctrl.set_coordinated_method(_parameters.y_coordinated_method);
 
@@ -1148,9 +1168,9 @@ FixedwingAttitudeControl::task_main()
 
 				} else {
 					// pure rate control
-					_roll_ctrl.set_bodyrate_setpoint(_manual.y * 6.0f);
-					_pitch_ctrl.set_bodyrate_setpoint(-_manual.x * 6.0f);
-					_yaw_ctrl.set_bodyrate_setpoint(_manual.r);
+					_roll_ctrl.set_bodyrate_setpoint(_manual.y * _parameters.acro_max_x_rate_rad);
+					_pitch_ctrl.set_bodyrate_setpoint(-_manual.x * _parameters.acro_max_y_rate_rad);
+					_yaw_ctrl.set_bodyrate_setpoint(_manual.r * _parameters.acro_max_z_rate_rad);
 
 					float roll_u = _roll_ctrl.control_bodyrate(control_input);
 					_actuators.control[0] = (PX4_ISFINITE(roll_u)) ? roll_u + _parameters.trim_roll : _parameters.trim_roll;

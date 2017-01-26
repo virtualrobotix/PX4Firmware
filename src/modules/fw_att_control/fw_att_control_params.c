@@ -575,3 +575,42 @@ PARAM_DEFINE_FLOAT(FW_MAN_Y_SC, 1.0f);
  * @group FW Attitude Control
  */
 PARAM_DEFINE_INT32(FW_BAT_SCALE_EN, 0);
+
+/**
+ * Acro body x max rate.
+ *
+ * This is the rate the controller is trying to achieve if the user applies full roll
+ * stick input in acro mode.
+ *
+ * @min 45
+ * @max 720
+ * @unit degrees
+ * @group FW Attitude Control
+ */
+PARAM_DEFINE_FLOAT(FW_ACRO_X_MAX, 90);
+
+/**
+ * Acro body y max rate.
+ *
+ * This is the body y rate the controller is trying to achieve if the user applies full pitch
+ * stick input in acro mode.
+ *
+ * @min 45
+ * @max 720
+ * @unit degrees
+ * @group FW Attitude Control
+ */
+PARAM_DEFINE_FLOAT(FW_ACRO_Y_MAX, 90);
+
+/**
+ * Acro body z max rate.
+ *
+ * This is the body z rate the controller is trying to achieve if the user applies full yaw
+ * stick input in acro mode.
+ *
+ * @min 10
+ * @max 180
+ * @unit degrees
+ * @group FW Attitude Control
+ */
+PARAM_DEFINE_FLOAT(FW_ACRO_Z_MAX, 45);
