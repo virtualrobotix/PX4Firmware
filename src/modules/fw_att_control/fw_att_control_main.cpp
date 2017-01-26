@@ -1058,7 +1058,6 @@ FixedwingAttitudeControl::task_main()
 				control_input.lock_integrator = lock_integrator;
 				control_input.groundspeed = groundspeed;
 				control_input.groundspeed_scaler = groundspeed_scaler;
-				control_input.do_turn_compensation = false;
 
 				_yaw_ctrl.set_coordinated_method(_parameters.y_coordinated_method);
 
