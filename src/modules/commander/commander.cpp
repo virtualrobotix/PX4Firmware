@@ -3945,7 +3945,6 @@ set_control_mode()
 		control_mode.flag_control_velocity_enabled = false;
 		control_mode.flag_control_acceleration_enabled = false;
 		control_mode.flag_control_termination_enabled = false;
-		control_mode.flag_external_manual_override_ok = false;
 		break;
 
 	case vehicle_status_s::NAVIGATION_STATE_DESCEND:
