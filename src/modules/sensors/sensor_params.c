@@ -2600,6 +2600,16 @@ PARAM_DEFINE_INT32(RC_MAP_TRANS_SW, 0);
  * @value 18 Channel 18
  */
 PARAM_DEFINE_INT32(RC_MAP_GEAR_SW, 0);
+
+/**
+ * Stabilize switch channel mapping.
+ *
+ * @min 0
+ * @max 18
+ * @group Radio Switches
+*/
+PARAM_DEFINE_INT32(RC_MAP_STAB_SW, 0);
+
 /**
  * AUX1 Passthrough RC Channel
  *
@@ -3067,6 +3077,24 @@ PARAM_DEFINE_FLOAT(RC_TRANS_TH, 0.25f);
  *
  */
 PARAM_DEFINE_FLOAT(RC_GEAR_TH, 0.25f);
+
+/**
+ * Threshold for the stabilize switch.
+ *
+ * 0-1 indicate where in the full channel range the threshold sits
+ *             0 : min
+ *             1 : max
+ * sign indicates polarity of comparison
+ *             positive : true when channel>th
+ *             negative : true when channel<th
+ *
+ * @min -1
+ * @max 1
+ * @group Radio Switches
+ *
+ *
+ */
++PARAM_DEFINE_FLOAT(RC_STAB_TH, 0.5f);
 
 /**
  * PWM input channel that provides RSSI.

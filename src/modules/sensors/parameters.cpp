@@ -93,6 +93,7 @@ int initialize_parameter_handles(ParameterHandles &parameter_handles)
 	parameter_handles.rc_map_arm_sw = param_find("RC_MAP_ARM_SW");
 	parameter_handles.rc_map_trans_sw = param_find("RC_MAP_TRANS_SW");
 	parameter_handles.rc_map_gear_sw = param_find("RC_MAP_GEAR_SW");
+	parameter_handles.rc_map_stab_sw = param_find("RC_MAP_STAB_SW");
 
 	parameter_handles.rc_map_aux1 = param_find("RC_MAP_AUX1");
 	parameter_handles.rc_map_aux2 = param_find("RC_MAP_AUX2");
@@ -124,6 +125,7 @@ int initialize_parameter_handles(ParameterHandles &parameter_handles)
 	parameter_handles.rc_armswitch_th = param_find("RC_ARMSWITCH_TH");
 	parameter_handles.rc_trans_th = param_find("RC_TRANS_TH");
 	parameter_handles.rc_gear_th = param_find("RC_GEAR_TH");
+	parameter_handles.rc_stab_th = param_find("RC_STAB_TH");
 
 	/* Differential pressure offset */
 	parameter_handles.diff_pres_offset_pa = param_find("SENS_DPRES_OFF");
@@ -331,6 +333,10 @@ int update_parameters(const ParameterHandles &parameter_handles, Parameters &par
 		PX4_WARN("%s", paramerr);
 	}
 
+	if (param_get(parameter_handles.rc_map_stab_sw, &(parameters.rc_map_stab_sw)) != OK) {
+		PX4_WARN("%s", paramerr);
+	}
+
 	param_get(parameter_handles.rc_map_aux1, &(parameters.rc_map_aux1));
 	param_get(parameter_handles.rc_map_aux2, &(parameters.rc_map_aux2));
 	param_get(parameter_handles.rc_map_aux3, &(parameters.rc_map_aux3));
@@ -380,6 +386,8 @@ int update_parameters(const ParameterHandles &parameter_handles, Parameters &par
 	param_get(parameter_handles.rc_gear_th, &(parameters.rc_gear_th));
 	parameters.rc_gear_inv = (parameters.rc_gear_th < 0);
 	parameters.rc_gear_th = fabs(parameters.rc_gear_th);
+	parameters.rc_stab_inv = (parameters.rc_stab_th < 0);
+	parameters.rc_stab_th = fabs(parameters.rc_stab_th);
 
 	/* Airspeed offset */
 	param_get(parameter_handles.diff_pres_offset_pa, &(parameters.diff_pres_offset_pa));
