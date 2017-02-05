@@ -3460,10 +3460,10 @@ set_main_state_rc(struct vehicle_status_s *status_local)
 		break;
 
 	case manual_control_setpoint_s::SWITCH_POS_OFF:		// MANUAL
-		if (sp_man->acro_switch == manual_control_setpoint_s::SWITCH_POS_ON) {
-			res = main_state_transition(status_local,vehicle_status_s::MAIN_STATE_ACRO);
+		if (sp_man.acro_switch == manual_control_setpoint_s::SWITCH_POS_ON) {
+			res = main_state_transition(status_local,commander_state_s::MAIN_STATE_ACRO, main_state_prev, &status_flags, &internal_state);
 		}
-		else if(sp_man->rattitude_switch == manual_control_setpoint_s::SWITCH_POS_ON){
+		else if(sp_man.rattitude_switch == manual_control_setpoint_s::SWITCH_POS_ON){
 			/* Similar to acro transitions for multirotors.  FW aircraft don't need a
 			 * rattitude mode.*/
 			if (status.is_rotary_wing) {
@@ -3471,14 +3471,14 @@ set_main_state_rc(struct vehicle_status_s *status_local)
 			} else {
 				res = main_state_transition(status_local, commander_state_s::MAIN_STATE_STAB, main_state_prev, &status_flags, &internal_state);
 			}
-		} else if (sp_man->stab_switch == manual_control_setpoint_s::SWITCH_POS_ON) {
+		} else if (sp_man.stab_switch == manual_control_setpoint_s::SWITCH_POS_ON) {
 			if (status.is_rotary_wing) {
-				res = main_state_transition(status_local,vehicle_status_s::MAIN_STATE_MANUAL);
+				res = main_state_transition(status_local,commander_state_s::MAIN_STATE_MANUAL, main_state_prev, &status_flags, &internal_state);
 			} else {
-				res = main_state_transition(status_local,vehicle_status_s::MAIN_STATE_STAB);
+				res = main_state_transition(status_local,commander_state_s::MAIN_STATE_STAB, main_state_prev, &status_flags, &internal_state);
 			}
 		} else {
-			res = main_state_transition(status_local,vehicle_status_s::MAIN_STATE_MANUAL);
+			res = main_state_transition(status_local,commander_state_s::MAIN_STATE_MANUAL, main_state_prev, &status_flags, &internal_state);
 		}
 
 		// TRANSITION_DENIED is not possible here
