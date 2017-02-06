@@ -73,6 +73,7 @@ Tailsitter::Tailsitter(VtolAttitudeControl *attc) :
 	_params_handles_tailsitter.airspeed_trans = param_find("VT_ARSP_TRANS");
 	_params_handles_tailsitter.airspeed_blend_start = param_find("VT_ARSP_BLEND");
 	_params_handles_tailsitter.elevons_mc_lock = param_find("VT_ELEV_MC_LOCK");
+	_params_handles_tailsitter.mot_yaw_scale = param_find("VT_MOT_YAW_SCALE");
 
 }
 
@@ -117,6 +118,9 @@ Tailsitter::parameters_update()
 	if (_params_tailsitter.airspeed_trans < _params_tailsitter.airspeed_blend_start + 1.0f) {
 		_params_tailsitter.airspeed_trans = _params_tailsitter.airspeed_blend_start + 1.0f;
 	}
+
+	param_get(_params_handles_tailsitter.mot_yaw_scale, &_params_tailsitter.mot_yaw_scale);
+	_params_tailsitter.mot_yaw_scale = math::constrain(_params_tailsitter.mot_yaw_scale, 0.0f, 1.0f);
 }
 
 void Tailsitter::update_vtol_state()
@@ -442,7 +446,8 @@ void Tailsitter::fill_actuator_outputs()
 		_actuators_out_0->control[actuator_controls_s::INDEX_ROLL] = _actuators_mc_in->control[actuator_controls_s::INDEX_ROLL];
 		_actuators_out_0->control[actuator_controls_s::INDEX_PITCH] =
 			_actuators_mc_in->control[actuator_controls_s::INDEX_PITCH];
-		_actuators_out_0->control[actuator_controls_s::INDEX_YAW] = _actuators_mc_in->control[actuator_controls_s::INDEX_YAW];
+		_actuators_out_0->control[actuator_controls_s::INDEX_YAW] = _actuators_mc_in->control[actuator_controls_s::INDEX_YAW] *
+				_params_tailsitter.mot_yaw_scale;
 		_actuators_out_0->control[actuator_controls_s::INDEX_THROTTLE] =
 			_actuators_mc_in->control[actuator_controls_s::INDEX_THROTTLE];
 
@@ -457,9 +462,9 @@ void Tailsitter::fill_actuator_outputs()
 			_actuators_out_1->control[actuator_controls_s::INDEX_ROLL] =
 				_actuators_mc_in->control[actuator_controls_s::INDEX_YAW];	//roll elevon
 
-				// XXX Boxwing: We don't need to control pitch with elevons
+			// XXX Boxwing: We don't need to control pitch with elevons
 			_actuators_out_1->control[actuator_controls_s::INDEX_PITCH] = 0.0f;
-				//_actuators_mc_in->control[actuator_controls_s::INDEX_PITCH];	//pitch elevon
+			//_actuators_mc_in->control[actuator_controls_s::INDEX_PITCH];	//pitch elevon
 		}
 
 		break;

@@ -42,16 +42,16 @@
 #include <systemlib/param/param.h>
 
 /**
- * Duration of front transition phase 2
- *
- * Time in seconds it should take for the rotors to rotate forward completely from the point
- * when the plane has picked up enough airspeed and is ready to go into fixed wind mode.
- *
- * @unit s
- * @min 0.1
- * @max 5.0
- * @increment 0.01
- * @decimal 3
- * @group VTOL Attitude Control
+* Scale for yaw control output for motors.
+*
+* This parameter can be used to reduce the yaw control effort of the motors with
+* with respect to the elevons.
+*
+* @min 0
+* @max 1.0
+* @increment 0.01
+* @decimal 3
+* @group VTOL Attitude Control
+*/
 
-PARAM_DEFINE_FLOAT(VT_TRANS_P2_DUR, 0.5f);*/
+PARAM_DEFINE_FLOAT(VT_MOT_YAW_SCALE, 1.0f);
