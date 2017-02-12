@@ -3094,7 +3094,7 @@ PARAM_DEFINE_FLOAT(RC_GEAR_TH, 0.25f);
  *
  *
  */
-+PARAM_DEFINE_FLOAT(RC_STAB_TH, 0.5f);
+PARAM_DEFINE_FLOAT(RC_STAB_TH, 0.5f);
 
 /**
  * PWM input channel that provides RSSI.
