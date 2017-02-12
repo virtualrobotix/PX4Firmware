@@ -450,7 +450,7 @@ void Tailsitter::fill_actuator_outputs()
 				_params_tailsitter.mot_yaw_scale;
 		_actuators_out_0->control[actuator_controls_s::INDEX_THROTTLE] =
 			_actuators_mc_in->control[actuator_controls_s::INDEX_THROTTLE];
-
+		_actuators_out_1->control[actuator_controls_s::INDEX_FLAPS] = 0.0f;
 		_actuators_out_1->timestamp = _actuators_mc_in->timestamp;
 
 		if (_params->elevons_mc_lock == 1) {
@@ -486,6 +486,10 @@ void Tailsitter::fill_actuator_outputs()
 			_actuators_fw_in->control[actuator_controls_s::INDEX_YAW];	// yaw
 		_actuators_out_1->control[actuator_controls_s::INDEX_THROTTLE] =
 			_actuators_fw_in->control[actuator_controls_s::INDEX_THROTTLE];	// throttle
+
+		// this is used to have yaw control with the flaps on the side in fixed wing mode
+		_actuators_out_1->control[actuator_controls_s::INDEX_FLAPS] =
+			_actuators_fw_in->control[actuator_controls_s::INDEX_YAW];	// yaw
 		break;
 
 	case TRANSITION_TO_FW:
