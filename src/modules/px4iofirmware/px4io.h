@@ -131,6 +131,8 @@ extern uint16_t			r_page_servo_disarmed[];	/* PX4IO_PAGE_DISARMED_PWM */
 #define r_setup_sbus_rate	r_page_setup[PX4IO_P_SETUP_SBUS_RATE]
 #define r_setup_thr_fac		r_page_setup[PX4IO_P_SETUP_THR_MDL_FAC]
 #define r_setup_slew_max	r_page_setup[PX4IO_P_SETUP_MOTOR_SLEW_MAX]
+#define r_setup_trim_wing_high 	r_page_setup[PX4IO_P_SETUP_TRIM_WING_HIGH]
+#define r_setup_trim_wing_low 	r_page_setup[PX4IO_P_SETUP_TRIM_WING_LOW]
 
 #define r_control_values	(&r_page_controls[0])
 

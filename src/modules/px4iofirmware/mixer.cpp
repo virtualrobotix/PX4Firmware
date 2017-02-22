@@ -297,6 +297,11 @@ mixer_tick(void)
 		/* mix */
 		mixed = mixer_mix_threadsafe(&outputs[0], &r_mixer_limits);
 
+		outputs[4] += REG_TO_FLOAT(r_setup_trim_wing_high);
+		outputs[5] -= REG_TO_FLOAT(r_setup_trim_wing_high);
+		outputs[6] -= REG_TO_FLOAT(r_setup_trim_wing_low);
+		outputs[7] += REG_TO_FLOAT(r_setup_trim_wing_low);
+
 		/* the pwm limit call takes care of out of band errors */
 		pwm_limit_calc(should_arm, should_arm_nothrottle, mixed, r_setup_pwm_reverse, r_page_servo_disarmed,
 			       r_page_servo_control_min, r_page_servo_control_max, outputs, r_page_servos, &pwm_limit);
