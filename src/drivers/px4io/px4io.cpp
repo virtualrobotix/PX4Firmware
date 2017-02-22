@@ -1311,6 +1311,22 @@ PX4IO::task_main()
 					(void)io_reg_set(PX4IO_PAGE_SETUP, PX4IO_P_SETUP_MOTOR_SLEW_MAX, FLOAT_TO_REG(param_val));
 				}
 
+				/* trim value for elevons on high wing */
+				parm_handle = param_find("FW_TRIM_W_HIGH");
+
+				if (parm_handle != PARAM_INVALID) {
+					param_get(parm_handle, &param_val);
+					(void)io_reg_set(PX4IO_PAGE_SETUP, PX4IO_P_SETUP_TRIM_WING_HIGH, FLOAT_TO_REG(param_val));
+				}
+
+				/* trim value for elevons on low wing */
+				parm_handle = param_find("FW_TRIM_W_LOW");
+
+				if (parm_handle != PARAM_INVALID) {
+					param_get(parm_handle, &param_val);
+					(void)io_reg_set(PX4IO_PAGE_SETUP, PX4IO_P_SETUP_TRIM_WING_LOW, FLOAT_TO_REG(param_val));
+				}
+
 				// Also trigger param update in Battery instance.
 				_battery.updateParams();
 			}
