@@ -652,3 +652,21 @@ PARAM_DEFINE_FLOAT(FW_ACRO_Z_MAX, 45);
  * @group FW Attitude Control
  */
 PARAM_DEFINE_FLOAT(FW_RATT_TH, 0.8f);
+
+/**
+ * Trim value for elevons located on the high wing.
+ *
+ * @min -1
+ * @max 1
+ * @group FW Attitude Control
+ */
+PARAM_DEFINE_FLOAT(FW_TRIM_W_HIGH, 0);
+
+/**
+ * Trim value for elevons located on the low wing.
+ *
+ * @min -1
+ * @max 1
+ * @group FW Attitude Control
+ */
+PARAM_DEFINE_FLOAT(FW_TRIM_W_LOW, 0);
