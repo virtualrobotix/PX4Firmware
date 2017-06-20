@@ -242,6 +242,7 @@ private:
 		param_t acro_pitch_max;
 		param_t acro_yaw_max;
 		param_t rattitude_thres;
+		param_t throttle_hover;
 
 		param_t vtol_type;
 		param_t roll_tc;
@@ -281,6 +282,7 @@ private:
 		math::Vector<3> auto_rate_max;		/**< attitude rate limits in auto modes */
 		math::Vector<3> acro_rate_max;		/**< max attitude rates in acro mode */
 		float rattitude_thres;
+		float throttle_hover;
 		int vtol_type;						/**< 0 = Tailsitter, 1 = Tiltrotor, 2 = Standard airframe */
 		bool vtol_opt_recovery_enabled;
 		float vtol_wv_yaw_rate_scale;			/**< Scale value [0, 1] for yaw rate setpoint  */
@@ -379,6 +381,11 @@ private:
 	 * Main attitude control task.
 	 */
 	void		task_main();
+
+	/**
+	 * Piecwise linear mapping of throttle demand in acro mode.
+	 */
+	static float    throttle_curve(float ctl, float ctr);
 };
 
 namespace mc_att_control
@@ -511,6 +518,7 @@ MulticopterAttitudeControl::MulticopterAttitudeControl() :
 	_params_handles.acro_pitch_max	= 	param_find("MC_ACRO_P_MAX");
 	_params_handles.acro_yaw_max	= 	param_find("MC_ACRO_Y_MAX");
 	_params_handles.rattitude_thres = 	param_find("MC_RATT_TH");
+	_params_handles.throttle_hover = 	param_find("MPC_THR_HOVER");
 	_params_handles.vtol_type 		= 	param_find("VT_TYPE");
 	_params_handles.roll_tc			= 	param_find("MC_ROLL_TC");
 	_params_handles.pitch_tc		= 	param_find("MC_PITCH_TC");
@@ -661,6 +669,8 @@ MulticopterAttitudeControl::parameters_update()
 
 	/* stick deflection needed in rattitude mode to control rates not angles */
 	param_get(_params_handles.rattitude_thres, &_params.rattitude_thres);
+
+	param_get(_params_handles.throttle_hover, &_params.throttle_hover);
 
 	param_get(_params_handles.vtol_type, &_params.vtol_type);
 
@@ -837,6 +847,19 @@ MulticopterAttitudeControl::sensor_correction_poll()
 	/* update the latest gyro selection */
 	if (_sensor_correction.selected_gyro_instance < sizeof(_sensor_gyro_sub) / sizeof(_sensor_gyro_sub[0])) {
 		_selected_gyro = _sensor_correction.selected_gyro_instance;
+	}
+}
+
+float
+MulticopterAttitudeControl::throttle_curve(float ctl, float ctr)
+{
+	/* piecewise linear mapping: 0:ctr -> 0:0.5
+	 * and ctr:1 -> 0.5:1 */
+	if (ctl < 0.5f) {
+		return 2 * ctl * ctr;
+
+	} else {
+		return ctr + 2 * (ctl - 0.5f) * (1.0f - ctr);
 	}
 }
 
@@ -1224,7 +1247,8 @@ MulticopterAttitudeControl::task_main()
 					/* manual rates control - ACRO mode */
 					_rates_sp = math::Vector<3>(_manual_control_sp.y, -_manual_control_sp.x,
 								    _manual_control_sp.r).emult(_params.acro_rate_max);
-					_thrust_sp = math::min(_manual_control_sp.z, MANUAL_THROTTLE_MAX_MULTICOPTER);
+					_thrust_sp = throttle_curve(_manual_control_sp.z, _params.throttle_hover);
+					_thrust_sp = math::min(_thrust_sp, MANUAL_THROTTLE_MAX_MULTICOPTER);
 
 					/* publish attitude rates setpoint */
 					_v_rates_sp.roll = _rates_sp(0);
