@@ -3,6 +3,7 @@
 # @name BoxWing
 #
 # @type Tailsitter
+# @class VTOL
 #
 # @maintainer Roman Bapst <roman@px4.io>
 #
