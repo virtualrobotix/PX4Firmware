@@ -74,6 +74,8 @@ Tailsitter::Tailsitter(VtolAttitudeControl *attc) :
 	_params_handles_tailsitter.airspeed_blend_start = param_find("VT_ARSP_BLEND");
 	_params_handles_tailsitter.elevons_mc_lock = param_find("VT_ELEV_MC_LOCK");
 	_params_handles_tailsitter.mot_yaw_scale = param_find("VT_MOT_YAW_SCALE");
+	_params_tailsitter.trim_upper_wing = param_find("FW_TRIM_W_HIGH");
+	_params_tailsitter.trim_lower_wing = param_find("FW_TRIM_W_LOW");
 
 }
 
@@ -121,6 +123,14 @@ Tailsitter::parameters_update()
 
 	param_get(_params_handles_tailsitter.mot_yaw_scale, &_params_tailsitter.mot_yaw_scale);
 	_params_tailsitter.mot_yaw_scale = math::constrain(_params_tailsitter.mot_yaw_scale, 0.0f, 1.0f);
+
+	param_get(_params_handles_tailsitter.trim_upper_wing, &_params_tailsitter.trim_upper_wing);
+	_params_tailsitter.trim_upper_wing = math::constrain(_params_tailsitter.trim_upper_wing, -1.0f, 1.0f);
+
+	param_get(_params_handles_tailsitter.trim_lower_wing, &_params_tailsitter.trim_lower_wing);
+	_params_tailsitter.trim_lower_wing = math::constrain(_params_tailsitter.trim_lower_wing, -1.0f, 1.0f);
+
+
 }
 
 void Tailsitter::update_vtol_state()
@@ -490,6 +500,10 @@ void Tailsitter::fill_actuator_outputs()
 		// this is used to have yaw control with the flaps on the side in fixed wing mode
 		_actuators_out_1->control[actuator_controls_s::INDEX_FLAPS] =
 			_actuators_fw_in->control[actuator_controls_s::INDEX_YAW];	// yaw
+
+		_actuators_out_1->control[5] = _params_tailsitter.trim_upper_wing;
+		_actuators_out_1->control[6] = _params_tailsitter.trim_lower_wing;
+
 		break;
 
 	case TRANSITION_TO_FW:

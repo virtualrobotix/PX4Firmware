@@ -71,6 +71,8 @@ private:
 		float airspeed_blend_start;		/**< airspeed at which we start blending mc/fw controls */
 		int elevons_mc_lock;			/**< lock elevons in multicopter mode */
 		float mot_yaw_scale;
+		float trim_upper_wing;
+		float trim_lower_wing;
 
 	} _params_tailsitter;
 
@@ -82,6 +84,8 @@ private:
 		param_t airspeed_blend_start;
 		param_t elevons_mc_lock;
 		param_t mot_yaw_scale;
+		param_t trim_upper_wing;
+		param_t trim_lower_wing;
 
 	} _params_handles_tailsitter;
 
