@@ -1240,8 +1240,18 @@ MulticopterAttitudeControl::task_main()
 				/* attitude controller disabled, poll rates setpoint topic */
 				if (_v_control_mode.flag_control_manual_enabled) {
 					/* manual rates control - ACRO mode */
-					_rates_sp = math::Vector<3>(_manual_control_sp.y, -_manual_control_sp.x,
-								    _manual_control_sp.r).emult(_params.acro_rate_max);
+					if (_manual_control_sp.aux2 > 0.0f) {
+						// the vehicle is pitched down as flies more like a plane
+						// swap roll and yaw axis
+						_rates_sp = math::Vector<3>(_manual_control_sp.y, _manual_control_sp.r,
+									    -_manual_control_sp.x).emult(_params.acro_rate_max);
+
+					} else {
+						// standard acro mode
+						_rates_sp = math::Vector<3>(_manual_control_sp.y, -_manual_control_sp.x,
+									    _manual_control_sp.r).emult(_params.acro_rate_max);
+					}
+
 					_thrust_sp = throttle_curve(_manual_control_sp.z, _params.throttle_hover);
 					_thrust_sp = math::min(_thrust_sp, MANUAL_THROTTLE_MAX_MULTICOPTER);
 
