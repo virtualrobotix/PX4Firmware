@@ -46,7 +46,7 @@ set(config_module_list
 	drivers/rgbled
 	drivers/sf0x
 	drivers/sf1xx
-	drivers/snapdragon_rc_pwm
+#	drivers/snapdragon_rc_pwm
 	drivers/srf02
 	drivers/stm32
 	drivers/stm32/adc
