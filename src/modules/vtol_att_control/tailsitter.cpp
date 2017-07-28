@@ -185,8 +185,8 @@ void Tailsitter::update_vtol_state()
 		case MC_MODE:
 			// initialise a front transition
 			// XXX Boxwing wants instantaneous transition
-			_vtol_schedule.flight_mode 	= FW_MODE;
-			//_vtol_schedule.transition_start = hrt_absolute_time();
+			_vtol_schedule.flight_mode 	= TRANSITION_FRONT_P1;
+			_vtol_schedule.transition_start = hrt_absolute_time();
 			break;
 
 		case FW_MODE:
