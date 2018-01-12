@@ -31,7 +31,7 @@
 #
 ############################################################################
 px4_add_module(
-	MODULE drivers__boards__vrbrain-v51
+	MODULE drivers__boards__vrubrain-v52
 	COMPILE_FLAGS
 		-Os
 	SRCS
