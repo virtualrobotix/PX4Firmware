@@ -143,7 +143,7 @@ __BEGIN_DECLS
 //#define I2C_BUS_HMC5883			PX4_I2C_BUS_ONBOARD
 //#define I2C_BUS_EXT_HMC5883		PX4_I2C_BUS_EXPANSION
 
-#define PX4_I2C_BUS_LED         PX4_I2C_BUS_ONBOARD
+#define PX4_I2C_BUS_LED         PX4_I2C_BUS_EXPANSION
 
 /*
  * Devices on the onboard bus.
