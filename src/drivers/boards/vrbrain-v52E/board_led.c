@@ -1,7 +1,6 @@
 /****************************************************************************
  *
  *   Copyright (c) 2013 PX4 Development Team. All rights reserved.
- *   Author: Anton Babushkin <anton.babushkin@me.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -33,86 +32,75 @@
  ****************************************************************************/
 
 /**
- * @file version.h
+ * @file board_led.c
  *
- * Tools for system version detection.
- *
- * @author Anton Babushkin <anton.babushkin@me.com>
+ * VRBRAIN LED backend.
  */
 
-#ifndef VERSION_H_
-#define VERSION_H_
+#include <px4_config.h>
 
-#ifdef CONFIG_ARCH_BOARD_PX4FMU_V1
-#define	HW_ARCH "PX4FMU_V1"
-#endif
+#include <stdbool.h>
 
-#ifdef CONFIG_ARCH_BOARD_PX4FMU_V2
-#define	HW_ARCH "PX4FMU_V2"
-#endif
+#include "stm32.h"
+#include "board_config.h"
 
-#ifdef CONFIG_ARCH_BOARD_PX4FMU_V4
-#define	HW_ARCH "PX4FMU_V4"
-#endif
+#include <arch/board/board.h>
 
-#ifdef CONFIG_ARCH_BOARD_PX4FMU_V4PRO
-#define	HW_ARCH "PX4FMU_V4PRO"
-#endif
+/*
+ * Ideally we'd be able to get these from up_internal.h,
+ * but since we want to be able to disable the NuttX use
+ * of leds for system indication at will and there is no
+ * separate switch, we need to build independent of the
+ * CONFIG_ARCH_LEDS configuration switch.
+ */
+__BEGIN_DECLS
+extern void led_init(void);
+extern void led_on(int led);
+extern void led_off(int led);
+extern void led_toggle(int led);
+__END_DECLS
 
-#ifdef CONFIG_ARCH_BOARD_AEROCORE
-#define	HW_ARCH "AEROCORE"
-#endif
 
-#ifdef CONFIG_ARCH_BOARD_MINDPX_V2
-#define HW_ARCH "MINDPX_V2"
-#endif
 
-#ifdef CONFIG_ARCH_BOARD_PX4_STM32F4DISCOVERY
-#define HW_ARCH "PX4_STM32F4DISCOVERY"
-#endif
+static uint32_t g_ledmap[] = {
+	GPIO_LED_BLUE,    // Indexed by LED_BLUE
+	GPIO_LED_RED,     // Indexed by LED_RED, LED_AMBER
+	GPIO_LED_SAFETY,  // Indexed by LED_SAFETY
+	GPIO_LED_GREEN,   // Indexed by LED_GREEN
+};
 
-#ifdef CONFIG_ARCH_BOARD_SITL
-#define	HW_ARCH "LINUXTEST"
-#endif
+__EXPORT void led_init(void)
+{
+	/* Configure LED GPIOs for output */
+	for (size_t l = 0; l < (sizeof(g_ledmap) / sizeof(g_ledmap[0])); l++) {
+		stm32_configgpio(g_ledmap[l]);
+	}
+}
 
-#ifdef CONFIG_ARCH_BOARD_EAGLE
-#define	HW_ARCH "LINUXTEST"
-#endif
+static void phy_set_led(int led, bool state)
+{
+	/* Pull Down to switch on */
+	stm32_gpiowrite(g_ledmap[led], !state);
+}
 
-#ifdef CONFIG_ARCH_BOARD_RPI2
-#define	HW_ARCH "LINUXTEST"
-#endif
+static bool phy_get_led(int led)
+{
 
-#ifdef CONFIG_ARCH_BOARD_VRBRAIN_V51
-#define HW_ARCH "VRBRAIN_V51"
-#endif
+	return !stm32_gpioread(g_ledmap[led]);
+}
 
-#ifdef CONFIG_ARCH_BOARD_VRBRAIN_V52
-#define HW_ARCH "VRBRAIN_V52"
-#endif
+__EXPORT void led_on(int led)
+{
+	phy_set_led(led, true);
+}
 
-#ifdef CONFIG_ARCH_BOARD_VRBRAIN_V52E
-#define HW_ARCH "VRBRAIN_V52E"
-#endif
+__EXPORT void led_off(int led)
+{
+	phy_set_led(led, false);
+}
 
-#ifdef CONFIG_ARCH_BOARD_VRBRAIN_V54
-#define HW_ARCH "VRBRAIN_V54"
-#endif
+__EXPORT void led_toggle(int led)
+{
 
-#ifdef CONFIG_ARCH_BOARD_VRUBRAIN_V51
-#define HW_ARCH "VRUBRAIN_V51"
-#endif
-
-#ifdef CONFIG_ARCH_BOARD_VRUBRAIN_V52
-#define HW_ARCH "VRUBRAIN_V52"
-#endif
-
-#ifdef CONFIG_ARCH_BOARD_VRCORE_V10
-#define HW_ARCH "VRCORE_V10"
-#endif
-
-#ifdef CONFIG_ARCH_BOARD_AEROFC_V1
-#define HW_ARCH "AEROFC_V1"
-#endif
-
-#endif /* VERSION_H_ */
+	phy_set_led(led, !phy_get_led(led));
+}
