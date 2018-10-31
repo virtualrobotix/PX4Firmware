@@ -354,7 +354,7 @@ function(px4_nuttx_add_romfs)
 	add_custom_command(OUTPUT romfs.o
 		COMMAND cmake -E remove_directory ${romfs_temp_dir}
 		COMMAND cmake -E copy_directory ${romfs_src_dir} ${romfs_temp_dir}
-		COMMAND cmake -E copy_directory ${extras_dir} ${romfs_temp_dir}/extras
+		COMMAND cmake -E copy_directory ${extras_dir} ${romfs_temp_dir}/extras || (exit 0)
 		COMMAND ${PYTHON_EXECUTABLE} ${romfs_autostart}
 			-a ${romfs_temp_dir}/init.d
 			-s ${romfs_temp_dir}/init.d/rc.autostart
